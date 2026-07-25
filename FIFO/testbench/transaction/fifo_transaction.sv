@@ -7,7 +7,7 @@ bit [FIFO_WIDTH-1:0] data_out;
 
 `uvm_object_utils(fifo_transaction)
 
-function new(string name="fifo_transaction");
+function new(string name="fifo_seq_item");
   super.new(name);
 endfunction
 
