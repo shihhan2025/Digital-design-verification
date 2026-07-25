@@ -2,15 +2,15 @@
 `define FIFO_DRIVER_SV
 
 class fifo_driver extends uvm_driver #(fifo_seq_item);
-  `uvm_componment_utils(fifo_driver)
+  `uvm_component_utils(fifo_driver)
 
-  virtual fifo_of vif;
+  virtual fifo_if vif;
 
-  function new(string name = "fifo_driver", uvm_componment parent = null);
+  function new(string name = "fifo_driver", uvm_component parent = null);
     super.new(name, parent);
   endfunction
 
-  virtual function viod build_phase(uvm_phase phase);
+  virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     if (!uvm_config_db#(virtual fifo_if)::get(this, "", "vif", vif) ) begin
       `uvm_fatal("DRV", "Could not get virtual interface fifo_if from config_db")
@@ -27,13 +27,13 @@ class fifo_driver extends uvm_driver #(fifo_seq_item);
     vif.rst_n <= 1'b1;
 
     forever begin
-      seq_item_port_get_next_item(req);
-      driver_transfer(req);
-      seq_item_port_done();
+      seq_item_port.get_next_item(req);
+      drive_transfer(req);
+      seq_item_port.item_done();
     end
   endtask
 
-  virtual task driver_transfer(fifo_seq_item tr);
+  virtual task drive_transfer(fifo_seq_item tr);
     @(posedge vif.clk);
 
     if (tr.wr_en && !vif.full) begin
