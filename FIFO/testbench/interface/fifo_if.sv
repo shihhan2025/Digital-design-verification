@@ -12,4 +12,17 @@ interface fifo_if #(parameter DATA_WIDTH = 8)
     // status
     logic empty;
     logic full;
+
+    // connect to RTL
+    modport DUT (
+        input  clk, rst_n, wr_en, data_in, rd_en,
+        output data_out, empty, full
+    );
+
+    // testbench driver
+    modport TB (
+        input  clk, data_out, empty, full,
+        output rst_n, wr_en, data_in, rd_en
+    );
+    
 endinterface
