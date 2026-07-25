@@ -1,4 +1,4 @@
-FIFO
+# FIFO
 - RTL Design
 - SystemVerilog Testbench
 - UVM Environment
@@ -6,28 +6,22 @@ FIFO
 - Functional Coverage
 
 # FIFO Spec.
-FIFO Type
-----------
+### FIFO Type
 Synchronous FIFO
 
-Clock
-----------
+### Clock
 Single Clock
 
-Reset
-----------
+### Reset
 Active Low Reset
 
-Data Width
-----------
+### Data Width
 8 bits
 
-Depth
-----------
+### Depth
 16 entries
 
-Interface
-----------
+### Interface
 wr_en
 rd_en
 wdata
@@ -35,16 +29,12 @@ rdata
 full
 empty
 
-Operation
-----------
-Write when
+### Operation
+###### Write when
 wr_en == 1 && full == 0
-
-Read when
+###### Read when
 rd_en == 1 && empty == 0
-
-Overflow
+###### Overflow
 wr_en ==1 && full==1
-
-Underflow
+###### Underflow
 rd_en==1 && empty==1
