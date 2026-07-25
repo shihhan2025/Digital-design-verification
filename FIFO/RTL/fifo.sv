@@ -1,5 +1,5 @@
 
-module fifo (
+module fifo #(parameter DATA_WIDTH = 8, parameter DEPTH = 16)(
 		clk, 
 		rst_n, 
 		wr_en, 
@@ -9,8 +9,7 @@ module fifo (
 		empty, 
 		full
 );
-parameter DATA_WIDTH = 8;
-parameter DEPTH = 16;
+
 localparam ADDR_WIDTH = (DEPTH <= 1) ? 1 : $clog2(DEPTH);
 
 input wire clk;
