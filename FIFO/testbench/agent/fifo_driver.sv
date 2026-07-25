@@ -35,19 +35,24 @@ class fifo_driver extends uvm_driver #(fifo_seq_item);
 
   virtual task drive_transfer(fifo_seq_item tr);
     @(posedge vif.clk);
-
-    if (tr.wr_en && !vif.full) begin
+    vif.wr_en   <= tr.wr_en;
+    vif.rd_en   <= tr.rd_en;
+    vif.data_in <= tr.data_in;   
+    /*
+    if (tr.wr_en) begin
+      while (vif.full) @(posedge vif.clk);
       vif.wr_en <= 1'b1;
       vif.data_in <= tr.data_in;
     end else begin
       vif.wr_en <= 1'b0;
     end
 
-    if (tr.rd_en && !vif.empty) begin
+    if (tr.rd_en) begin
+      while (vif.empty) @(posedge vif.clk);
       vif.rd_en <= 1'b1;
     end else begin
       vif.rd_en <= 1'b0;
-    end
+    end*/
     
     @(posedge vif.clk);
     vif.wr_en <= 1'b0;
