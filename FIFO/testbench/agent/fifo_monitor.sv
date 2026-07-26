@@ -27,41 +27,25 @@ class fifo_monitor extends uvm_monitor;
     join
   endtask
 
-  virtual task sample_interface();
+  task sample_interface();
     fifo_seq_item tr;
-
     forever begin
-      @(posedge vif.clk)
-      if (!vif.rst_n) continue;
-
-      if (vif.wr_en && !vif.full) begin
-        tr = fifo_seq_item::type_id::create("tr");
-        tr.wr_en = vif.wr_en;
-        tr.rd_en = vif.rd_en;
-        tr.data_in = vif.data_in;
-        
-        `uvm_info("MON_WR", $sformatf("Sampled Write: data_in = 0x%0h", tr.data_in), UVM_HIGH)
-        ap.write(tr);
+      @(posedge vif.clk);
+      if(!vif.rst_n)
+        continue;
+      tr = fifo_seq_item::type_id::create("tr");
+      tr.wr_en   = vif.wr_en;
+      tr.rd_en   = vif.rd_en;
+      tr.data_in = vif.data_in;
+      tr.full    = vif.full;
+      tr.empty   = vif.empty;
+      if(tr.rd_en && !tr.empty) begin
+        @(posedge vif.clk);
+        tr.data_out = vif.data_out;
       end
-
-      if (vif.rd_en && !vif.empty) begin
-        tr = fifo_seq_item::type_id::create("tr");
-        tr.wr_en = vif.wr_en;
-        tr.rd_en = vif.rd_en;
-
-        fork 
-          automatic fifo_seq_item rd_tr = tr;
-          begin
-            @(posedge vif.clk);
-            rd_tr.data_out = vif.data_out;
-            `uvm_info("MON_RD", $sformatf("Sampled Read: data_out = 0x%0h", rd_tr.data_out), UVM_HIGH)
-            ap.write(rd_tr);
-          end
-        join_none
-        
-      end
+      ap.write(tr);
+      
     end
-    
   endtask
   
 endclass
