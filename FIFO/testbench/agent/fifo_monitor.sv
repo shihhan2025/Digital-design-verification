@@ -6,6 +6,7 @@ class fifo_monitor extends uvm_monitor;
 
   virtual fifo_if vif;
   uvm_analysis_port #(fifo_seq_item) ap;
+  fifo_seq_item pending_read;
 
   function new(string name = "fifo_monitor", uvm_component parent = null);
     super.new(name, parent);
@@ -20,32 +21,39 @@ class fifo_monitor extends uvm_monitor;
   endfunction
 
   virtual task run_phase(uvm_phase phase);
-    wait (vif.rst_n == 1'b1)
-    `uvm_info("MON", "Reset de-asserted, monitor starting...", UVM_LOW)
-    fork 
-      sample_interface();
-    join
-  endtask
+    wait(vif.rst_n == 1'b1);
+    `uvm_info("MON", "Reset released, monitor start", UVM_LOW)
 
-  task sample_interface();
-    fifo_seq_item tr;
     forever begin
       @(posedge vif.clk);
-      if(!vif.rst_n)
-        continue;
-      tr = fifo_seq_item::type_id::create("tr");
-      tr.wr_en   = vif.wr_en;
-      tr.rd_en   = vif.rd_en;
-      tr.data_in = vif.data_in;
-      tr.full    = vif.full;
-      tr.empty   = vif.empty;
-      if(tr.rd_en && !tr.empty) begin
-        @(posedge vif.clk);
-        tr.data_out = vif.data_out;
+      if(!vif.rst_n) continue;
+      if(pending_read != null) begin
+        pending_read.data_out = vif.data_out;
+        `uvm_info("MON_RD", $sformatf("READ data_out = 0x%0h", pending_read.data_out), UVM_HIGH)
+        ap.write(pending_read);
+        pending_read = null;
       end
-      ap.write(tr);
-      
+
+      if((vif.wr_en && !vif.full) || (vif.rd_en && !vif.empty)) begin
+        fifo_seq_item tr;
+        tr = fifo_seq_item::type_id::create("tr");
+        tr.wr_en = vif.wr_en;
+        tr.rd_en = vif.rd_en;
+        tr.data_in = vif.data_in;
+
+        if(vif.wr_en && !vif.full) begin
+          `uvm_info("MON_WR",$sformatf("WRITE data_in = 0x%0h", vif.data_in), UVM_HIGH)
+        end
+
+        if(vif.rd_en && !vif.empty) begin
+          pending_read = tr;
+        end
+        else begin
+          ap.write(tr);
+        end
+      end
     end
+
   endtask
   
 endclass
