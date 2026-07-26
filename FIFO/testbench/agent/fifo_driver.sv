@@ -34,7 +34,7 @@ class fifo_driver extends uvm_driver #(fifo_seq_item);
   endtask
 
   virtual task drive_transfer(fifo_seq_item tr);
-    @(posedge vif.clk);
+    @(negedge vif.clk);
     vif.wr_en   <= tr.wr_en;
     vif.rd_en   <= tr.rd_en;
     vif.data_in <= tr.data_in;   
@@ -54,7 +54,7 @@ class fifo_driver extends uvm_driver #(fifo_seq_item);
       vif.rd_en <= 1'b0;
     end*/
     
-    @(posedge vif.clk);
+    @(negedge vif.clk);
     vif.wr_en <= 1'b0;
     vif.rd_en <= 1'b0;
   endtask
