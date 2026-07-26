@@ -5,62 +5,66 @@ class fifo_scoreboard extends uvm_scoreboard;
   `uvm_component_utils(fifo_scoreboard)
   uvm_analysis_imp #(fifo_seq_item, fifo_scoreboard) item_imp;
 
-  bit[7:0] expected_queue[$];
+  bit [7:0] expected_queue[$];
 
-  int match_count = 0;
-  int mismatch_count = 0;
-  
-  function new(string name = "fifo_scoreboard", uvm_component parent = null);
-    super.new(name, parent);
+  int total_write;
+  int total_read;
+  int match_count;
+  int mismatch_count;
+
+  function new(string name="fifo_scoreboard", uvm_component parent=null);
+    super.new(name,parent);
   endfunction
 
-  virtual function void build_phase(uvm_phase phase);
-    super_build_phase(phase);
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
     item_imp = new("item_imp", this);
   endfunction
 
-  virtual function void write(fifo_seq_item tr);
-    if (tr.wr_en) begin
-      expected_queue.push_back(tr.data_in);
-      `uvm_info("SCB", $sformatf("Pushed to Queue: 0x%0h | Current Queue Size = %0d", tr.data_in, expected_queue.size()), UVM_HIGH);
-    end
-
-    if (tr.rd_en) begin
+  function void write(fifo_seq_item tr);
+    bit [7:0] expected_data;
+    if (tr.rd_en && !tr.empty) begin
+      total_read++;
       if (expected_queue.size() == 0) begin
-        `uvm_error("SCB", $sformatf("Underflow Error! Read detected but Expected Queue is EMPTY! Actual data_out = 0x%0h", tr.data_out))
         mismatch_count++;
+        `uvm_error("SCB", $sformatf("Reference Queue Empty! DUT Output = %0h", tr.data_out));
       end
       else begin
-        bit [7:0] expected_data;
         expected_data = expected_queue.pop_front();
-        if (tr.data_out === expected_data) begin
+        if (expected_data == tr.data_out) begin
           match_count++;
-          `uvm_info("SCB_PASS", $sformatf("MATCH! Expected = 0x%0h, Actual = 0x%0h", expected_data, tr.data_out), UVM_LOW)
+          `uvm_info("SCB_PASS", $sformatf("MATCH  Expected=%0h Actual=%0h",expected_data, tr.data_out),UVM_LOW);
         end
         else begin
           mismatch_count++;
-          `uvm_error("SCB_FAIL", $sformatf("MISMATCH! Expected = 0x%0h, Actual = 0x%0h", expected_data, tr.data_out))
+          `uvm_error("SCB_FAIL", $sformatf("MISMATCH Expected=%0h Actual=%0h", expected_data,tr.data_out));
         end
       end
     end
-  endfunction
-  
-  virtual function void report_phase(uvm_phase phase);
-    super.report_phase(phase);
-    `uvm_info("SCB_SUMMARY", "--------------------------------------------------", UVM_LOW)
-    `uvm_info("SCB_SUMMARY", $sformatf("  TOTAL MATCHES    : %0d", match_count), UVM_LOW)
-    `uvm_info("SCB_SUMMARY", $sformatf("  TOTAL MISMATCHES : %0d", mismatch_count), UVM_LOW)
-    `uvm_info("SCB_SUMMARY", $sformatf("  LEFTOVER IN QUEUE: %0d", expected_queue.size()), UVM_LOW)
-    `uvm_info("SCB_SUMMARY", "--------------------------------------------------", UVM_LOW)
 
-    if (mismatch_count > 0) begin
-      `uvm_error("SCB_SUMMARY", "TEST FAILED WITH MISMATCHES!")
-    end else begin
-      `uvm_info("SCB_SUMMARY", "TEST PASSED SUCCESSFULLY!", UVM_LOW)
+    if (tr.wr_en && !tr.full) begin
+      total_write++;
+      expected_queue.push_back(tr.data_in);
+      `uvm_info("SCB_WRITE", $sformatf("Push %0h Queue Size=%0d",tr.data_in, expected_queue.size()),UVM_HIGH)
     end
+  endfunction
+
+  function void report_phase(uvm_phase phase);
+    super.report_phase(phase);
+    `uvm_info("SCB", "====================================", UVM_NONE)
+    `uvm_info("SCB", $sformatf("Total Write     : %0d", total_write),UVM_NONE)
+    `uvm_info("SCB", $sformatf("Total Read      : %0d", total_read), UVM_NONE)
+    `uvm_info("SCB", $sformatf("Match Count     : %0d", match_count),UVM_NONE)
+    `uvm_info("SCB", $sformatf("Mismatch Count  : %0d", mismatch_count),UVM_NONE)
+    `uvm_info("SCB", $sformatf("Queue Left      : %0d",expected_queue.size()),UVM_NONE)
+    
+    if ((mismatch_count == 0) && (expected_queue.size() == 0))
+      `uvm_info("SCB","******** TEST PASSED ********",UVM_NONE)
+    else
+      `uvm_error("SCB","******** TEST FAILED ********")
+
   endfunction
 
 endclass
 
 `endif
-  
