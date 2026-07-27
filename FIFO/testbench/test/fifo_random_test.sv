@@ -1,6 +1,3 @@
-`ifndef FIFO_RANDOM_TEST_SV
-`define FIFO_RANDOM_TEST_SV
-
 class fifo_random_test extends fifo_base_test;
   `uvm_component_utils(fifo_random_test)
   fifo_random_sequence seq;
@@ -17,4 +14,3 @@ class fifo_random_test extends fifo_base_test;
   endtask
   
 endclass
-`endif
