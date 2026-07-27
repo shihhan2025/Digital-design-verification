@@ -4,7 +4,7 @@
 class fifo_monitor extends uvm_monitor;
   `uvm_component_utils(fifo_monitor)
 
-  virtual fifo_if vif;
+  virtual fifo_if.TB vif;
   uvm_analysis_port #(fifo_seq_item) ap;
   fifo_seq_item pending_read;
 
@@ -48,7 +48,7 @@ class fifo_monitor extends uvm_monitor;
         end
 
         if(vif.rd_en && !vif.empty) begin
-          pending_read = tr.clone;
+          $cast(pending_read, tr.clone());
         end
         else begin
           ap.write(tr);
