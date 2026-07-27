@@ -5,7 +5,7 @@ package fifo_pkg;
   import uvm_pkg::*;
   `include "uvm_macros.svh"
   
-  `include "fifo_transaction.sv"
+  `include "fifo_seq_item.sv"
   `include "fifo_seq_pkg.sv" 
   `include "fifo_driver.sv"
   `include "fifo_monitor.sv"
