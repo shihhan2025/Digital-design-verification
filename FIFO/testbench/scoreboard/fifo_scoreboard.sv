@@ -57,8 +57,10 @@ class fifo_scoreboard extends uvm_scoreboard;
     `uvm_info("SCB", $sformatf("Match Count     : %0d", match_count),UVM_NONE)
     `uvm_info("SCB", $sformatf("Mismatch Count  : %0d", mismatch_count),UVM_NONE)
     `uvm_info("SCB", $sformatf("Queue Left      : %0d",expected_queue.size()),UVM_NONE)
-    
-    if ((mismatch_count == 0) && (expected_queue.size() == 0))
+
+    if (if(total_read > total_write))
+      error("SCB","******** TEST FAILED ********")
+    else if ((mismatch_count == 0) && (expected_queue.size() == 0))
       `uvm_info("SCB","******** TEST PASSED ********",UVM_NONE)
     else
       `uvm_error("SCB","******** TEST FAILED ********")
