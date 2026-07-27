@@ -40,13 +40,15 @@ class fifo_monitor extends uvm_monitor;
         tr.wr_en = vif.wr_en;
         tr.rd_en = vif.rd_en;
         tr.data_in = vif.data_in;
+        tr.full = vif.full;
+        tr.empty = vif.empty;
 
         if(vif.wr_en && !vif.full) begin
           `uvm_info("MON_WR",$sformatf("WRITE data_in = 0x%0h", vif.data_in), UVM_HIGH)
         end
 
         if(vif.rd_en && !vif.empty) begin
-          pending_read = tr;
+          pending_read = tr.clone;
         end
         else begin
           ap.write(tr);
