@@ -24,5 +24,14 @@ interface fifo_if #(parameter DATA_WIDTH = 8)
         input  clk, data_out, empty, full,
         output rst_n, wr_en, data_in, rd_en
     );
+
+    clocking drv_cb @(posedge clk);
+        output wr_en;
+        output rd_en;
+        output data_in;
+        input data_out;
+        input full;
+        input empty;
+    endclocking
     
 endinterface
