@@ -1,10 +1,10 @@
-class fifo_transaction #(parameter DATA_WIDTH=8) extends uvm_sequence_item;
+class fifo_seq_item extends uvm_sequence_item;
 
 rand bit wr_en;
 rand bit rd_en;
-rand bit [DATA_WIDTH-1:0] data_in;
+rand bit [7:0] data_in;
 
-bit [DATA_WIDTH-1:0] data_out;
+bit [7:0] data_out;
 bit full;
 bit empty;
 
@@ -17,9 +17,9 @@ bit empty;
   `uvm_field_int(empty,    UVM_ALL_ON)
 `uvm_object_utils_end
 
-// constraint c_op { 
-  
-//}
+constraint c_valid_op {
+    wr_en || rd_en;
+}
 
 function new(string name="fifo_seq_item");
   super.new(name);
