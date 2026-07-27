@@ -19,7 +19,7 @@ class fifo_env extends uvm_env;
 
   virtual function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-    agent.monitor.port.connect(scoreboard.item_imp);
+    agent.monitor.ap.connect(scoreboard.item_imp);
   endfunction
 endclass
 
