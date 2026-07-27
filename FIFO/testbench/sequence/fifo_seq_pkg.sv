@@ -37,10 +37,10 @@ class fifo_random_sequence extends fifo_base_sequence;
   endtask
 endclass
 
-class fifo_direct_sequence extends fifo_base_sequence;
-  `uvm_object_utils(fifo_direct_sequence)
+class fifo_basic_sequence extends fifo_base_sequence;
+  `uvm_object_utils(fifo_basic_sequence)
   int fifo_depth = 16;
-  function new (string name = "fifo_direct_sequence");
+  function new (string name = "fifo_basic_sequence");
     super.new(name);
   endfunction
 
@@ -48,12 +48,9 @@ class fifo_direct_sequence extends fifo_base_sequence;
     fifo_seq_item req_item;
     `uvm_info("SEQ", "Starting direct sequence: Fill FIFO then Empty FIFO", UVM_LOW);
     for(int i=0;i<fifo_depth;i++) begin
-      req_item = fifo_seq_item::type_id::create( "req_item"$sformatf("req_item_%0d", i) );
+      req_item = fifo_seq_item::type_id::create( $sformatf("req_item_%0d", i) );
       start_item(req_item);
-      if (!req_item.randomize() with {
-        wr_en == 1;
-        rd_en == 0;
-      })
+      if (!req_item.randomize() with { wr_en == 1; rd_en == 0;})
         `uvm_fatal("SEQ", "Randomization failed!")
       finish_item(req_item);
     end
@@ -66,5 +63,48 @@ class fifo_direct_sequence extends fifo_base_sequence;
     end
   endtask
 endclass
-    
+
+class fifo_overflow_sequence extends fifo_base_sequence;
+  `uvm_object_utils(fifo_overflow_sequence)
+
+  int fifo_depth = 16;
+  int overflow_num = 5;
+
+  function new(string name="fifo_overflow_sequence");
+    super.new(name);
+  endfunction
+
+  virtual task body();
+    fifo_seq_item req;
+    for (int i=0; i<fifo_depth; i++) begin
+      req = fifo_seq_item::type_id::create($sformatf("fill_%0d",i));
+      start_item(req);
+      assert(req.randomize() with {wr_en == 1; rd_en == 0;});
+      finish_item(req);
+    end
+
+    for (int i=0; i<overflow_num; i++) begin
+      req = fifo_seq_item::type_id::create($sformatf("overflow_%0d",i));
+      start_item(req);
+      assert(req.randomize() with { wr_en == 1; rd_en == 0;});
+      finish_item(req);
+    end
+  endtask
+endclass
+
+class fifo_underflow_sequence extends fifo_base_sequence;
+  `uvm_object_utils(fifo_underflow_sequence)
+  int underflow_num = 5;
+  virtual task body();
+    fifo_seq_item req;
+    for(int i=0;i<underflow_num;i++) begin
+      req = fifo_seq_item::type_id::create($sformatf("underflow_%0d",i));
+      start_item(req);
+      assert(req.randomize() with { wr_en == 0; rd_en == 1;});
+      finish_item(req);
+    end
+
+  endtask
+endclass
+
 `endif
