@@ -22,11 +22,13 @@ class fifo_random_sequence extends fifo_base_sequence;
   virtual task body();
     fifo_seq_item req_item;
     `uvm_info("SEQ", $sformatf("Starting random sequence with %0d items", num_transactions), UVM_LOW);
-    repeat (num_transactions) begin
-      req_item = fifo_seq_item::type_id::create("req_item");
+    for(int i=0;i<num_transactions;i++) begin
+      req_item = fifo_seq_item::type_id::create( "req_item"$sformatf("req_item_%0d", i) );
       start_item(req_item);
 
-      if (!req_item.randomize() with {wr_en || rd_en}) begin
+      if (!req_item.randomize() with 
+          {wr_en || rd_en}) 
+        begin
         `uvm_fatal("SEQ", "Randomization failed!");
       end
 
@@ -45,10 +47,14 @@ class fifo_direct_sequence extends fifo_base_sequence;
   virtual task body();
     fifo_seq_item req_item;
     `uvm_info("SEQ", "Starting direct sequence: Fill FIFO then Empty FIFO", UVM_LOW);
-    repeat (fifo_depth) begin
-      req_item = fifo_seq_item::type_id::create("req_item");
+    for(int i=0;i<fifo_depth;i++) begin
+      req_item = fifo_seq_item::type_id::create( "req_item"$sformatf("req_item_%0d", i) );
       start_item(req_item);
-      assert(req_item.randomize() with { wr_en == 1'b1; rd_en == 1'b0; });
+      if (!req_item.randomize() with {
+        wr_en == 1;
+        rd_en == 0;
+      })
+        `uvm_fatal("SEQ", "Randomization failed!")
       finish_item(req_item);
     end
 
