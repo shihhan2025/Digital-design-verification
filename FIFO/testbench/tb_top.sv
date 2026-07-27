@@ -1,5 +1,10 @@
+
 module tb_top;
-logic clk;
+
+import uvm_pkg::*;
+import fifo_pkg::*;
+    
+logic clk = 0;
 
 always #5 clk = ~clk;
 
@@ -15,5 +20,16 @@ fifo dut(
     .empty(fifo_vif.empty),
     .full(fifo_vif.full)
 );
+
+initial begin
+    uvm_config_db#(virtual fifo_if)::set(
+        null,
+        "*",
+        "vif",
+        fifo_vif
+    );
+
+    run_test();
+end
 
 endmodule
